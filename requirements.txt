@@ -1,0 +1,11 @@
+python-dotenv
+sentence-transformers
+qdrant-client
+langchain
+langchain-community
+google-generativeai
+groq
+fastapi
+uvicorn
+streamlit
+docker
