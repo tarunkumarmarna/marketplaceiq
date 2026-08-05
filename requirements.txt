@@ -3,9 +3,13 @@ sentence-transformers
 qdrant-client
 langchain
 langchain-community
-google-generativeai
+langchain-classic
+google-genai
 groq
 fastapi
 uvicorn
 streamlit
 docker
+pdfplumber
+rank_bm25
+langchain-qdrant

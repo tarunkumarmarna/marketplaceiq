@@ -1,0 +1,13 @@
+filename,area,company,source_tier,has_tables,primary_source
+flipkart_returns_general.pdf,returns_warranty,flipkart,official,YES - large category grid,flipkart.com/pages/returnpolicy (real download)
+flipkart_returns_electronics.pdf,returns_warranty,flipkart,official,YES - brand/category grid,flipkart.com/pages/returnpolicy electronics section (real download)
+amazon_returns_general.pdf,returns_warranty,amazon_india,official,YES - Return Policy Types table,amazon.in official Returns Policy page (real download)
+meesho_returns_general.pdf,returns_warranty,meesho,official,YES - small refund timeline table,meesho.com/legal official page (real download)
+gst_tcs_official_rules.pdf,gst_invoicing,shared,official,NO - plain legal text,CBIC Section 52 CGST Act (real download)
+gst_einvoice_advisory.pdf,gst_invoicing,shared,official,NO - registration form fields,gst.gov.in registration portal (real download)
+dispute_consumer_protection_ecommerce_rules_2020.pdf,dispute_resolution,shared,official,NO - numbered legal clauses,Gazette of India official notification (real download)
+flipkart_seller_operations_guide.pdf,onboarding_listing_shipping_combined,flipkart,synthesized_from_public_sources,NO - prose/bullets,"JDK Seller Services; YourAMZSeller; Fretron; Kanakkupillai; IMARC Engineering"
+amazon_seller_operations_guide.pdf,onboarding_listing_shipping_combined,amazon_india,synthesized_from_public_sources,NO - prose/bullets,"Kanakkupillai; IMARC Engineering; sell.amazon.in blog; EcomShadow; amazon.in FAQ pages"
+meesho_seller_operations_guide.pdf,onboarding_listing_shipping_combined,meesho,synthesized_from_public_sources,NO - prose/bullets,"Ginesys; remove-bg.io; Lohar Studio; Seller Analytics Hub; supplier.meesho.com/shipping"
+cross_platform_comparison_returns.pdf,cross_platform_comparison,all_three,synthesized_from_public_sources,NO - rewritten as prose (was table originally),Derived from returns docs already in this corpus
+cross_platform_comparison_gst.pdf,cross_platform_comparison,all_three,synthesized_from_public_sources,NO - rewritten as prose (was table originally),Derived from GST docs already in this corpus
