@@ -1,19 +1,24 @@
 """
-Reads the 12 docs from data/raw using source_manifest.csv for metadata,
-chunks them, embeds them, and pushes everything into Qdrant.
-Run this once - it's not part of the live query path.
+Reads the docs in data/raw using source_manifest.csv for metadata, pulls out
+real table content properly (not just mangled plain text), chunks everything,
+embeds it, and pushes it into Qdrant. This is a one-time offline step, not
+part of the live query path - run it whenever the data corpus changes.
 """
 
 import csv
-import pdfplumber
-from sentence_transformers import SentenceTransformer
-from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct
 import os
+
+import pdfplumber
 from dotenv import load_dotenv
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, PointStruct, VectorParams
+from sentence_transformers import SentenceTransformer
 
 from config import (
-    DATA_RAW_DIR, EMBEDDING_MODEL, CHUNK_SIZE, CHUNK_OVERLAP,
+    CHUNK_OVERLAP,
+    CHUNK_SIZE,
+    DATA_RAW_DIR,
+    EMBEDDING_MODEL,
     QDRANT_COLLECTION_NAME,
 )
 
@@ -21,8 +26,8 @@ load_dotenv()
 
 
 def load_manifest():
-    # manifest gives us area/company/tier/sources per file - way more
-    # reliable than trying to parse all that out of the filename
+    # manifest gives me area/company/tier/source per file directly - way more
+    # reliable than trying to reverse-engineer that from the filename
     manifest_path = DATA_RAW_DIR / "source_manifest.csv"
     rows = {}
     with open(manifest_path, newline="", encoding="utf-8") as f:
@@ -36,38 +41,28 @@ def extract_text(pdf_path):
     text = ""
     with pdfplumber.open(pdf_path) as pdf:
         for page in pdf.pages:
-            # always grab plain text first, so any prose around a table
-            # doesn't get lost - the old version only kept text when a
-            # page had no detected table at all
+            # plain text first, on every page - a page with a table can still
+            # have real prose around it, don't want to lose that
             page_text = page.extract_text()
             if page_text:
                 text += page_text + "\n"
 
-            # then look for genuine tables and add a cleaned version below
-            tables = page.extract_tables()
-            for table in tables:
+            # then pull out genuine tables, filtering out near-empty rows -
+            # pdfplumber sometimes mistakes a page's nav bar for a table,
+            # and those rows are mostly empty cells, unlike a real data row
+            for table in page.extract_tables():
                 clean_rows = []
                 for row in table:
-                    clean_cells = [cell.strip() if cell else "" for cell in row]
-                    non_empty = sum(1 for c in clean_cells if c)
-                    # a real content row (Category / Window / Type) has at
-                    # least 2 filled cells - mostly-empty rows are usually
-                    # pdfplumber false-positives on nav bars/page headers,
-                    # not real table data
-                    if non_empty >= 2:
-                        clean_rows.append(clean_cells)
-
-                # only trust this as a genuine table if it produced
-                # multiple populated rows - one stray row is more likely
-                # noise than an actual data table
+                    cells = [c.strip() if c else "" for c in row]
+                    if sum(1 for c in cells if c) >= 2:
+                        clean_rows.append(cells)
                 if len(clean_rows) >= 2:
                     for row in clean_rows:
                         text += " | ".join(c for c in row if c) + "\n"
     return text
 
+
 def chunk_text(text, chunk_size, overlap):
-    # simple sliding window - step forward by (chunk_size - overlap) each time
-    # so consecutive chunks share some text and we don't lose meaning at the cut
     chunks = []
     start = 0
     while start < len(text):
@@ -80,24 +75,15 @@ def chunk_text(text, chunk_size, overlap):
 def main():
     manifest = load_manifest()
     embedder = SentenceTransformer(EMBEDDING_MODEL)
-
     client = QdrantClient(
-        url=os.getenv("QDRANT_URL"),
-        api_key=os.getenv("QDRANT_API_KEY"),
-        timeout=60,  # default timeout is too short for free-tier cluster + batch uploads
+        url=os.getenv("QDRANT_URL"), api_key=os.getenv("QDRANT_API_KEY"), timeout=60
     )
 
-    # (re)create the collection fresh each run - this script is meant to be
-    # re-runnable from scratch, not appended to every time
     if client.collection_exists(QDRANT_COLLECTION_NAME):
-       client.delete_collection(QDRANT_COLLECTION_NAME)
-
+        client.delete_collection(QDRANT_COLLECTION_NAME)
     client.create_collection(
         collection_name=QDRANT_COLLECTION_NAME,
         vectors_config=VectorParams(size=384, distance=Distance.COSINE),
-
-        # 384 = output dimension of all-MiniLM-L6-v2, check this if the
-        # embedding model in config.py ever changes
     )
 
     point_id = 0
@@ -106,7 +92,7 @@ def main():
     for filename, meta in manifest.items():
         pdf_path = DATA_RAW_DIR / filename
         if not pdf_path.exists():
-            print(f"⚠️ Skipping {filename} - not found in data/raw")
+            print(f"Skipping {filename} - not found in data/raw")
             continue
 
         text = extract_text(pdf_path)
@@ -114,36 +100,33 @@ def main():
         print(f"{filename}: {len(chunks)} chunks")
 
         vectors = embedder.encode(chunks)
-
         for chunk, vector in zip(chunks, vectors):
             points.append(
                 PointStruct(
                     id=point_id,
                     vector=vector.tolist(),
-                     payload={
+                    payload={
                         "page_content": chunk,
                         "metadata": {
                             "filename": filename,
                             "area": meta["area"],
                             "company": meta["company"],
                             "source_tier": meta["source_tier"],
-                            "primary_source": meta["primary_source"],
-                            "has_tables": meta["has_tables"],
                         },
                     },
                 )
             )
             point_id += 1
 
-    # upload in batches instead of one giant request - a single huge upsert
-    # can time out on the network before Qdrant finishes writing it
+    # upload in batches - one giant request can time out on a free-tier cluster
     batch_size = 20
     for i in range(0, len(points), batch_size):
-        batch = points[i:i + batch_size]
-        client.upsert(collection_name=QDRANT_COLLECTION_NAME, points=batch)
-        print(f"  uploaded batch {i // batch_size + 1} ({len(batch)} points)")
+        client.upsert(
+            collection_name=QDRANT_COLLECTION_NAME, points=points[i : i + batch_size]
+        )
 
-    print(f"\n✅ Done. {point_id} total chunks stored in Qdrant.")
+    print(f"\nDone. {point_id} total chunks stored in Qdrant.")
+
 
 if __name__ == "__main__":
     main()

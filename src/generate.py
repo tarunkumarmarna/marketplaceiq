@@ -1,11 +1,12 @@
 """
-Builds the prompt from reranked chunks, decides whether the question
-is simple enough for Groq or needs Gemini, and gets back a structured
-answer (not just a paragraph) so guardrails.py can actually check it.
+Builds the prompt from reranked chunks, routes to Gemini or Groq based on
+how complex the question looks, and gets back a structured answer (not
+free text) so guardrails.py can actually check the citations.
 """
 
 import json
 import os
+
 from dotenv import load_dotenv
 from google import genai
 from groq import Groq
@@ -30,14 +31,9 @@ Example response shape:
 
 def is_complex_query(query):
     query_lower = query.lower()
-
     companies_mentioned = sum(1 for c in COMPANY_NAMES if c in query_lower)
-    has_comparison_language = any(word in query_lower for word in COMPARISON_WORDS)
+    has_comparison_language = any(w in query_lower for w in COMPARISON_WORDS)
     is_long = len(query.split()) > 25
-
-    # any one of these is enough to call it complex - comparing companies
-    # or explicitly asking to compare needs more reasoning than a single
-    # fact lookup, so it goes to the stronger model
     return companies_mentioned >= 2 or has_comparison_language or is_long
 
 
@@ -49,11 +45,7 @@ def build_user_message(query, chunks):
             f"[Source: {meta['filename']} | {meta['company']} | {meta['source_tier']}]\n{chunk.page_content}"
         )
     context = "\n\n".join(context_blocks)
-
-    return f"""Context:
-{context}
-
-Question: {query}"""
+    return f"Context:\n{context}\n\nQuestion: {query}"
 
 
 def generate_with_gemini(user_message):
@@ -64,7 +56,7 @@ def generate_with_gemini(user_message):
         config={
             "system_instruction": SYSTEM_PROMPT,
             "response_mime_type": "application/json",
-            "temperature": 0.1,  # low temp - want consistent, non-creative answers for policy facts
+            "temperature": 0.1,
         },
     )
     return json.loads(response.text)
@@ -86,30 +78,11 @@ def generate_with_groq(user_message):
 
 def generate_answer(query, chunks):
     user_message = build_user_message(query, chunks)
-
     if is_complex_query(query):
         model_used = "gemini"
         result = generate_with_gemini(user_message)
     else:
         model_used = "groq"
         result = generate_with_groq(user_message)
-
     result["model_used"] = model_used
     return result
-
-
-if __name__ == "__main__":
-    from rerank import build_reranking_retriever
-
-    retriever = build_reranking_retriever()
-
-    test_queries = [
-        "What is the GST TCS rate under Section 52?",
-        "Compare Flipkart and Amazon's return policies for electronics",
-    ]
-
-    for query in test_queries:
-        print(f"\nQuery: {query}")
-        chunks = retriever.invoke(query)
-        result = generate_answer(query, chunks)
-        print(json.dumps(result, indent=2))

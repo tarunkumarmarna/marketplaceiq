@@ -1,0 +1,123 @@
+[
+  {
+    "id": 1,
+    "question": "Can an order be canceled after it's out for delivery?",
+    "expected_answer": "The order cannot be canceled once it\u2019s out for delivery.",
+    "expected_sources": [
+      "flipkart_returns_general.pdf"
+    ],
+    "area": "returns_warranty"
+  },
+
+  
+  {
+    "id": 2,
+    "question": "What is the return window for fresh fruit, vegetables, and milk on Flipkart?",
+    "expected_answer": "1 Day Return",
+    "expected_sources": [
+      "flipkart_returns_general.pdf"
+    ],
+    "area": "returns_warranty"
+  },
+  {
+    "id": 3,
+    "question": "How long is the timeframe for free replacement within which the item must be returned?",
+    "expected_answer": "7/10 days of delivery",
+    "expected_sources": [
+      "amazon_returns_general.pdf"
+    ],
+    "area": "returns_warranty"
+  },
+  {
+    "id": 4,
+    "question": "What is the maximum rate at which an electronic commerce operator can collect tax at source?",
+    "expected_answer": "one per cent.",
+    "expected_sources": [
+      "gst_tcs_official_rules.pdf"
+    ],
+    "area": "gst_invoicing"
+  },
+  {
+    "id": 5,
+    "question": "What is the latest date for rectification of any omission or incorrect particulars?",
+    "expected_answer": "the thirtieth day of November",
+    "expected_sources": [
+      "gst_tcs_official_rules.pdf"
+    ],
+    "area": "gst_invoicing"
+  },
+  {
+    "id": 6,
+    "question": "What is the maximum period allowed for furnishing a statement after its due date, as per the official rules?",
+    "expected_answer": "three years",
+    "expected_sources": [
+      "gst_tcs_official_rules.pdf"
+    ],
+    "area": "gst_invoicing"
+  },
+  
+ 
+  {
+    "id": 9,
+    "question": "Can an e-commerce entity impose cancellation charges on a consumer who cancels after confirming a purchase?",
+    "expected_answer": "No e-commerce entity shall impose cancellation charges on consumers cancelling after confirming purchase unless similar charges are also borne by the e-commerce entity, if they cancel the purchase order unilaterally for any reason.",
+    "expected_sources": [
+      "dispute_consumer_protection_ecommerce_rules_2020.pdf"
+    ],
+    "area": "dispute_resolution"
+  },
+  {
+    "id": 10,
+    "question": "What is the first step in the onboarding process for Flipkart sellers?",
+    "expected_answer": "Register at Flipkart Seller Hub with business PAN",
+    "expected_sources": [
+      "flipkart_seller_operations_guide.pdf"
+    ],
+    "area": "onboarding_listing_shipping_combined"
+  },
+  {
+    "id": 11,
+    "question": "What type of guides does Flipkart offer?",
+    "expected_answer": "Flipkart listing guides",
+    "expected_sources": [
+      "flipkart_seller_operations_guide.pdf"
+    ],
+    "area": "onboarding_listing_shipping_combined"
+  },
+  {
+    "id": 12,
+    "question": "What is the two-working-day seller response requirement for returns on Amazon?",
+    "expected_answer": "two-working-day seller response requirement",
+    "expected_sources": [
+      "amazon_seller_operations_guide.pdf"
+    ],
+    "area": "onboarding_listing_shipping_combined"
+  },
+  {
+    "id": 13,
+    "question": "What is Flipkart's return window range?",
+    "expected_answer": "7 to 30 days",
+    "expected_sources": [
+      "cross_platform_comparison_returns.pdf"
+    ],
+    "area": "cross_platform_comparison"
+  },
+  {
+    "id": 14,
+    "question": "How does Flipkart handle unresolved return disputes?",
+    "expected_answer": "On Flipkart, unresolved return disputes are first handled seller-to- seller, falling back to Flipkart\u2019s own platform-level grievance officer \u2014 required under the Consumer Protection (E-Commerce) Rules, 2020 \u2014 if the seller doesn\u2019t resolve things directly.",
+    "expected_sources": [
+      "cross_platform_comparison_returns.pdf"
+    ],
+    "area": "cross_platform_comparison"
+  },
+  {
+    "id": 15,
+    "question": "Does Flipkart require a valid GSTIN for every product category?",
+    "expected_answer": "yes",
+    "expected_sources": [
+      "cross_platform_comparison_gst.pdf"
+    ],
+    "area": "cross_platform_comparison"
+  }
+]
