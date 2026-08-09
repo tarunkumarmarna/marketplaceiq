@@ -2,7 +2,6 @@
 
 A RAG system that answers natural-language questions about Indian e-commerce marketplace policies - returns, seller onboarding, listing rules, GST/invoicing, shipping SLA, and dispute resolution - sourced from real Flipkart, Amazon India, and Meesho documents. Every answer is retrieved from real source documents, reranked for relevance, generated with citations, and independently fact-checked before being shown to the user.
 
-**Live demo:** _add your deployed Streamlit link here_
 
 ## Architecture
 
@@ -48,7 +47,11 @@ Every request gets a trace ID that follows it through every stage, logged as str
 
 ## Evaluation results
 
-_Run `eval/evaluate.py` and paste the output table here._
+--- Average scores ---
+faithfulness                            0.888889
+llm_context_precision_with_reference    0.919017
+context_recall                          0.815702
+answer_relevancy                        0.684825
 
 ## Future work (explicitly deferred)
 
