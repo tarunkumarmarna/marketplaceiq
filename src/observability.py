@@ -16,9 +16,9 @@ logger = logging.getLogger("marketplaceiq")
 logger.setLevel(logging.INFO)
 
 log_path = PROJECT_ROOT / "logs" / "pipeline.log"
+log_path.parent.mkdir(parents=True, exist_ok=True)  # create logs/ if it doesn't exist yet - fresh containers won't have it
 if not logger.handlers:
     logger.addHandler(logging.FileHandler(log_path))
-
 
 def new_trace_id():
     return str(uuid.uuid4())[:8]
