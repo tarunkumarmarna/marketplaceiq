@@ -47,10 +47,10 @@ Every request gets a trace ID that follows it through every stage, logged as str
 
 ## Evaluation results
 
---- Average scores ---
-faithfulness                            0.888889
-llm_context_precision_with_reference    0.919017
-context_recall                          0.815702
+--- Average scores ---\
+faithfulness                            0.888889\
+llm_context_precision_with_reference    0.919017\
+context_recall                          0.815702\
 answer_relevancy                        0.684825
 
 ## Future work (explicitly deferred)
